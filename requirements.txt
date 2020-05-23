@@ -3,3 +3,4 @@ uvicorn
 python-multipart
 flake8
 yapf
+requests

@@ -145,6 +145,8 @@ _executions-data/api/
 _executions-data/broker/
 _executions-data/postgres/
 
+_executions_data/*
+
 .venv3.8
 tmp/*
 zip/*

@@ -5,11 +5,28 @@ from pathlib import Path
 from uploader.functions import save_upload_file
 from zip_helpers.functions import create_zip
 from crypto.utils import get_hash_from_file
+from crypto.electroncash.requests import list_of_addresses, pay_to, broadcast
 
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import HTMLResponse
 
 app = FastAPI()
+addresses = None
+
+
+# TODO: move this to the app start method
+@app.get("/start")
+async def start():
+    global addresses
+    res, lista = list_of_addresses()
+    if res:
+        addresses = lista
+    return {"addresses": addresses}
+
+
+@app.post("/register")
+async def register(name):
+    return {"this is your new wallet ...."}
 
 
 @app.post("/files/")
@@ -20,7 +37,7 @@ async def create_files(files: List[bytes] = File(...)):
 @app.post("/uploadfiles/")
 async def create_upload_files(files: List[UploadFile] = File(...)):
     unique_id = uuid.uuid4()
-    path = f"/home/hanchon/devel/cash_file_uploader/src/tmp/{str(unique_id)}/"
+    path = f"/home/hanchon/devel/cash_file_uploader/tmp/{str(unique_id)}/"
     Path(path).mkdir(parents=True, exist_ok=True)
     paths = []
     for file in files:
@@ -28,9 +45,21 @@ async def create_upload_files(files: List[UploadFile] = File(...)):
         paths.append(path_actual)
         save_upload_file(file, Path(path_actual))
 
-    zip_path = f"{str(unique_id)}.zip"
+    zip_path = f"/home/hanchon/devel/cash_file_uploader/zip/{str(unique_id)}.zip"
     create_zip(paths, zip_path)
-    print(get_hash_from_file(zip_path))
+    x = get_hash_from_file(zip_path)
+
+    data = f"{x}{unique_id}"
+
+    print(data)
+
+    res, raw = pay_to("qzs9aq2ag6yxnt987ayhy6lc4cn7xw6svsn04rdud8", 0.0001, data)
+    hexa = None
+    if res:
+        hexa = raw["hex"]
+        print(hexa)
+        # broadcast
+        print(broadcast(hexa))
 
     return {"filenames": [file.filename for file in files]}
 
