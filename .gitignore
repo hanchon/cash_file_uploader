@@ -146,3 +146,5 @@ _executions-data/broker/
 _executions-data/postgres/
 
 .venv3.8
+tmp/*
+zip/*
