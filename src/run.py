@@ -7,6 +7,9 @@ from zip_helpers.functions import create_zip
 from crypto.utils import get_hash_from_file
 from crypto.electroncash.requests import list_of_addresses, pay_to, broadcast
 
+from database.models import Caso
+from database.db import create_models, create_session
+
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import HTMLResponse
 
@@ -59,13 +62,21 @@ async def create_upload_files(files: List[UploadFile] = File(...)):
         hexa = raw["hex"]
         print(hexa)
         # broadcast
-        print(broadcast(hexa))
+        res2, raw = broadcast(hexa)
+        print(raw)
+        caso = Caso(generated_id=str(unique_id), tx_hash=raw[1])
+        session = create_session()
+        session.add(caso)
+        session.commit()
 
     return {"filenames": [file.filename for file in files]}
 
 
 @app.get("/")
 async def main():
+    # TODO: move this to the start program function
+    create_models()
+
     content = """
         <body>
         <form action="/files/" enctype="multipart/form-data" method="post">

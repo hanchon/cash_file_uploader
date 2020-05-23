@@ -4,3 +4,5 @@ python-multipart
 flake8
 yapf
 requests
+sqlalchemy
+psycopg2-binary
