@@ -1,4 +1,6 @@
 import uuid
+import uvicorn
+
 from typing import List
 from pathlib import Path
 
@@ -10,8 +12,10 @@ from crypto.electroncash.requests import list_of_addresses, pay_to, broadcast
 from database.models import Caso
 from database.db import create_models, create_session
 
-from fastapi import FastAPI, File, UploadFile
+from fastapi import Form
+from fastapi import FastAPI, File, UploadFile, Request, Response
 from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
 
 app = FastAPI()
 addresses = None
@@ -38,7 +42,12 @@ async def create_files(files: List[bytes] = File(...)):
 
 
 @app.post("/uploadfiles/")
-async def create_upload_files(files: List[UploadFile] = File(...)):
+async def create_upload_files(*, nombre: str = Form(...), files: List[UploadFile] = File(...)):
+    # Do something with this
+    print(nombre)
+    for file in files:
+        print(file)
+
     unique_id = uuid.uuid4()
     path = f"/home/hanchon/devel/cash_file_uploader/tmp/{str(unique_id)}/"
     Path(path).mkdir(parents=True, exist_ok=True)
@@ -62,12 +71,12 @@ async def create_upload_files(files: List[UploadFile] = File(...)):
         hexa = raw["hex"]
         print(hexa)
         # broadcast
-        res2, raw = broadcast(hexa)
-        print(raw)
-        caso = Caso(generated_id=str(unique_id), tx_hash=raw[1])
-        session = create_session()
-        session.add(caso)
-        session.commit()
+        # res2, raw = broadcast(hexa)
+        # print(raw)
+        # caso = Caso(generated_id=str(unique_id), tx_hash=raw[1])
+        # session = create_session()
+        # session.add(caso)
+        # session.commit()
 
     return {"filenames": [file.filename for file in files]}
 
@@ -83,10 +92,15 @@ async def main():
         <input name="files" type="file" multiple>
         <input type="submit">
         </form>
-        <form action="/uploadfiles/" enctype="multipart/form-data" method="post">
-        <input name="files" type="file" multiple>
-        <input type="submit">
+        <form id="data" action="/uploadfiles/" enctype="multipart/form-data" method="post">
+            <input name="nombre" id="nombre" type="text" value="valor"/>
+            <input name="files" type="file" multiple />
+            <input type="submit" />
         </form>
         </body>
     """
     return HTMLResponse(content=content)
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host='0.0.0.0', port=7000)
