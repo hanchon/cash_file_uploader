@@ -1,20 +1,12 @@
 version: "3"
 services:
-  postgres-dev:
-    image: "postgres:alpine"
-    environment:
-      - POSTGRES_PASSWORD=mysecretpassword
-    ports:
-      - "127.0.0.1:5432:5432"
-    volumes:
-      - ./_executions-data/postgres:/var/lib/postgresql/data
   electrum-dev:
     build:
       context: .
       dockerfile: "docker/electrom-cash.dockerfile"
     environment:
-      - ELECTRUM_USER=electrum
-      - ELECTRUM_PASSWORD=electrumpassword
+      - ELECTRUM_USER=electrumgithub
+      - ELECTRUM_PASSWORD=electrumgithubpassword
       - TESTNET=true
       - WALLET=/data/wallet_de_pruebas
     volumes:
